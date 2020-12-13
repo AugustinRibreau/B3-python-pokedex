@@ -5,14 +5,12 @@ from tkinter import *
 from urllib.request import urlopen
 from PIL import ImageTk, Image
 
-request_all_pokemon = requests.get("https://pokeapi.co/api/v2/pokemon?limit=649")
-name = ""
-
 
 class App():
     def __init__(self):
         super().__init__()
         self.home_window = Tk()
+        self.request_all_pokemon = requests.get("https://pokeapi.co/api/v2/pokemon?limit=649")
         self.home_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/1.gif"
         self.init_UI()
 
@@ -36,7 +34,8 @@ class App():
         self.home_list = Frame(self.home_window, bg="red", height=100, borderwidth=4, relief="raised")
         home_header_title = Label(home_header, text="Pokédex", bg="#b60000", fg='white', font="Roboto, 30", width=596,
                                   height=2)
-        self.home_info_name_label = Label(home_info_name, text="  01" + " " + request_all_pokemon.json()['results'][0]['name'],
+        self.home_info_name_label = Label(home_info_name,
+                                          text="  01" + " " + self.request_all_pokemon.json()['results'][0]['name'],
                                           bg="#F2F2F2")
         self.home_info_characteristic_label = Label(home_info_characteristic,
                                                     text="hp : 45\n" + "attack : 49\n" + "defense : 49\n" + "speed : 45",
@@ -108,9 +107,9 @@ class App():
     def create_team_push(self):
         self.create_team_error = Label(self.create_teams_window, fg="red", text="Ce pokémon n'existe pas !",
                                        bg="#F2F2F2")
-        if request_all_pokemon.status_code == 200:
+        if self.request_all_pokemon.status_code == 200:
             self._unpack(self.create_team_error)
-            result = request_all_pokemon.json()
+            result = self.request_all_pokemon.json()
             iterator = 0
             for _ in result['results']:
                 if result['results'][iterator]['name'] == self.create_team_input.get():
@@ -130,7 +129,7 @@ class App():
 
     def display_teams(self):
         display_teams_window = Tk()
-        display_teams_window.title("Affichage des équipes")
+        display_teams_window.title("Affichage des equips")
         display_teams_window.geometry("500x400")
         display_teams_window.minsize(500, 400)
         display_teams_window.resizable(width=FALSE, height=FALSE)
@@ -144,7 +143,8 @@ class App():
             display_teams_list_file = open("./equipe/" + display_teams_list_file, "r")
             display_teams_file = display_teams_list_file.read().split('-')
             display_teams_file_name = display_teams_list_file.name.split('/')[2].split('.')[0]
-            display_teams_name_label = Label(display_teams_frame_label, text=display_teams_file_name + ": ", bg="#F2F2F2", fg="red")
+            display_teams_name_label = Label(display_teams_frame_label, text=display_teams_file_name + ": ",
+                                             bg="#F2F2F2", fg="red")
             display_teams_name_label.pack(side=LEFT)
             for c in display_teams_file:
                 display_teams_pokemon_name = Label(display_teams_frame_label, text=c + " ", bg="#F2F2F2")
@@ -178,26 +178,31 @@ class App():
         self.search_label_characteristic.pack()
         self.search_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
         self.search_image = PhotoImage(data=self.base64img(self.search_url))
-        self.search_canvas = Canvas(self.search_frame_result, bg="#F2F2F2", width="200", height="200", highlightthickness=0)
+        self.search_canvas = Canvas(self.search_frame_result, bg="#F2F2F2", width="200", height="200",
+                                    highlightthickness=0)
         self.search_image = self.search_image.zoom(2)
         self.search_canvas.pack()
         self.search_canvas.create_image(100, 100, image=self.search_image, anchor='center')
 
     def search_pokemon(self):
         search_input_value = self.search_input.get()
-        if request_all_pokemon.status_code == 200:
-            result = request_all_pokemon.json()
+        if self.request_all_pokemon.status_code == 200:
+            result = self.request_all_pokemon.json()
             i = 0
-            for pokemon in result['results']:
+            for _ in result['results']:
                 if result['results'][i]['name'] == search_input_value:
                     self.search_frame_result.pack()
-                    request_all_pokemon_characteristic = requests.get('https://pokeapi.co/api/v2/pokemon/' + str(i + 1))
-                    pokemon_characteristic_json = request_all_pokemon_characteristic.json()
+                    self.request_all_pokemon_characteristic = requests.get('https://pokeapi.co/api/v2/pokemon/' + str(i + 1))
+                    pokemon_characteristic_json = self.request_all_pokemon_characteristic.json()
                     self.search_label_characteristic.config(text="Nom : " + str(result['results'][i]['name']) + "\n" +
-                                          "HP : " + str(pokemon_characteristic_json['stats'][0]['base_stat']) + "\n" +
-                                          "Attack : " + str(pokemon_characteristic_json['stats'][1]['base_stat']) + "\n" +
-                                          "Defense : " + str(pokemon_characteristic_json['stats'][2]['base_stat']) + "\n" +
-                                          "Speed : " + str(pokemon_characteristic_json['stats'][5]['base_stat']))
+                                                                 "HP : " + str(
+                        pokemon_characteristic_json['stats'][0]['base_stat']) + "\n" +
+                                                                 "Attack : " + str(
+                        pokemon_characteristic_json['stats'][1]['base_stat']) + "\n" +
+                                                                 "Defense : " + str(
+                        pokemon_characteristic_json['stats'][2]['base_stat']) + "\n" +
+                                                                 "Speed : " + str(
+                        pokemon_characteristic_json['stats'][5]['base_stat']))
                     self.search_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + str(
                         i + 1) + ".png"
                     self.search_update_photo = PhotoImage(data=self.base64img(self.search_url))
@@ -220,39 +225,39 @@ class App():
         self.home_canvas.create_image(100, 100, image=self.home_image, anchor='center')
         self.home_scrollbar = Scrollbar(self.home_window)
         self.home_listbox = Listbox(self.home_list, width=30, height=30, font="Roboto, 20", bd="0",
-                               bg="#F2F2F2",
-                               selectmode=SINGLE)
+                                    bg="#F2F2F2",
+                                    selectmode=SINGLE)
         self.home_listbox.pack()
         self.home_listbox.bind('<<ListboxSelect>>', self.cur_select)
 
     def cur_select(self, event):
         home_widget = event.widget
         home_current_selection_id = home_widget.curselection()
-        home_current_selction_name = home_widget.get(home_current_selection_id[0])
-        request_all_pokemon_stats = requests.get('https://pokeapi.co/api/v2/pokemon/' + str(home_current_selection_id[0] + 1))
-        home_pokemon_hp = request_all_pokemon_stats.json()['stats'][0]['base_stat']
-        home_pokemon_attack = request_all_pokemon_stats.json()['stats'][1]['base_stat']
-        home_pokemon_defense = request_all_pokemon_stats.json()['stats'][2]['base_stat']
-        home_pokemon_speed = request_all_pokemon_stats.json()['stats'][5]['base_stat']
+        home_current_selection_name = home_widget.get(home_current_selection_id[0])
+        self.request_all_pokemon_stats = requests.get(
+            'https://pokeapi.co/api/v2/pokemon/' + str(home_current_selection_id[0] + 1))
+        home_pokemon_hp = self.request_all_pokemon_stats.json()['stats'][0]['base_stat']
+        home_pokemon_attack = self.request_all_pokemon_stats.json()['stats'][1]['base_stat']
+        home_pokemon_defense = self.request_all_pokemon_stats.json()['stats'][2]['base_stat']
+        home_pokemon_speed = self.request_all_pokemon_stats.json()['stats'][5]['base_stat']
         self.home_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/" + str(
             home_current_selection_id[0] + 1) + ".gif"
         self.home_update_image = PhotoImage(data=self.base64img(self.home_url))
         self.home_image = self.home_update_image
         self.home_update_image = self.home_update_image.zoom(2)
-        self.home_info_name_label.config(text=home_current_selction_name)
+        self.home_info_name_label.config(text=home_current_selection_name)
         self.home_canvas.create_image(100, 100, image=self.home_update_image, anchor='center')
-        self.home_info_characteristic_label.config(text=
-                                                   "hp : " + str(home_pokemon_hp) + "\n" +
-                                                   "attack : " + str(home_pokemon_attack) + "\n" +
-                                                   "defense : " + str(home_pokemon_defense) + "\n" +
-                                                   "speed : " + str(home_pokemon_speed))
+        self.home_info_characteristic_label.config(text="hp : " + str(home_pokemon_hp) + "\n" +
+                                                        "attack : " + str(home_pokemon_attack) + "\n" +
+                                                        "defense : " + str(home_pokemon_defense) + "\n" +
+                                                        "speed : " + str(home_pokemon_speed))
 
     def _unpack(self, object):
         object.pack_forget()
 
     def list(self):
-        if request_all_pokemon.status_code == 200:
-            result = request_all_pokemon.json()
+        if self.request_all_pokemon.status_code == 200:
+            result = self.request_all_pokemon.json()
             i = 0
             for _ in result['results']:
                 if i < 9:
